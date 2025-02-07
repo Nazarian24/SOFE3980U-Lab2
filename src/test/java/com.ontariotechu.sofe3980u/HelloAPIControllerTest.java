@@ -1,28 +1,15 @@
 package com.ontariotechu.sofe3980U;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
 import org.junit.runner.RunWith;
-
-import org.junit.*;
-import org.junit.runner.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.test.context.*;
-import org.springframework.boot.test.mock.mockito.*;
-import org.springframework.test.context.junit4.*;
-
-import static org.hamcrest.Matchers.containsString;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(HelloAPIController.class)
@@ -77,4 +64,29 @@ public class HelloAPIControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Jack Sparrow"))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.suggestedEmail").value("Jack.Sparrow@OntarioTechU.net"));
     }
+
+    @Test
+    public void EmailAPIWithEmptyFirstName() throws Exception {
+    this.mvc.perform(get("/emailAPI").param("fname", ""))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("John Doe"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.suggestedEmail").value("John.Doe@OntarioTechU.net"));
+    }
+
+    @Test
+    public void EmailAPIWithSpecialCharacters() throws Exception {
+    this.mvc.perform(get("/emailAPI").param("fname", "J@ck").param("lname", "Sp@rrow!"))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("J@ck Sp@rrow!"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.suggestedEmail").value("J@ck.Sp@rrow!@OntarioTechU.net"));
+    }
+
+    @Test
+    public void EmailAPIWithNumericNames() throws Exception {
+    this.mvc.perform(get("/emailAPI").param("fname", "Jack123").param("lname", "Sparrow456"))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Jack123 Sparrow456"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.suggestedEmail").value("Jack123.Sparrow456@OntarioTechU.net"));
+    }
+
 }
